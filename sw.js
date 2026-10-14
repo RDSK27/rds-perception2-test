@@ -1,5 +1,5 @@
 /* RDS Perception 2 - Service Worker */
-var CACHE = 'perception2-v5';
+var CACHE = 'perception2-v6';
 var ASSETS = [
   './',
   './index.html',

@@ -367,7 +367,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v5</div>
+    <div class="app-ver">v6</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -523,7 +523,7 @@ var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],
   cols:3,n:9,vals:[],pair:[],got:{},down:{},tTrial:0,blank:false,remain:0,last:0,saved:null,keys:[]};
 
 /* ---------- PERCEPTION 2 (2026-10-14) ----------
-   Teclado de KB_COLS[modo] x KB_COLS[modo] (Normal 3x3, Extremo 4x4, Limite 4x4). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
+   Teclado de KB_COLS[modo] x KB_COLS[modo] (Normal 3x3, Extremo 3x3, Limite 4x4). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
    simbolos si se elige "Simbolos" y SIEMPRE en Limite). En el teclado hay UNA pareja de teclas iguales (en el de numeros falta uno y otro esta repetido):
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
@@ -533,8 +533,8 @@ var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
    DECISIONES MIAS no confirmadas: letras = A-Z (26, v4: sin Ñ); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
-var KB_COLS={normal:3, extremo:4, limite:4};      /* lado del teclado por modo (v4: Extremo vuelve a 4x4; Limite 4x4) */
-var LIM_START_MS=15000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
+var KB_COLS={normal:3, extremo:3, limite:4};      /* lado del teclado por modo (v6: Extremo 3x3 = 9 teclas; Limite 4x4 = 16) */
+var LIM_START_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
 var NUMS=['1','2','3','4','5','6','7','8','9'];
 var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');   /* v4: sin la Ñ (26 letras) */
 var SYM_INK='#2a2118';
