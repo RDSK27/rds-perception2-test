@@ -199,8 +199,7 @@ if('serviceWorker' in navigator){
   .key.on{filter:brightness(.74);transform:translateY(2px);}
   .sq-count{position:absolute;left:0;right:0;top:50%;margin-top:-70px;text-align:center;color:var(--rojo);font-weight:900;font-size:130px;line-height:1;-webkit-text-stroke:4px #fff;paint-order:stroke fill;pointer-events:none;z-index:5;}   /* rojo con borde blanco: se ve sobre blanco y sobre negro */
   .segment button[data-soon],.rank-tab[data-soon]{opacity:.38;cursor:default;}
-  #segEstimulo button,#segEstR button{font-size:0.72rem;letter-spacing:0.04em;}   /* etiquetas largas: Números/Letras */
-  .segment.off,.rank-tabs.off{opacity:.35;pointer-events:none;}   /* Limite: Numeros-Letras/Simbolos y 15/25/50 no aplican */
+  .segment.off,.rank-tabs.off{opacity:.35;pointer-events:none;}   /* Limite: 10/25/50 no aplica (el tamano 3x3/4x4 si) */
 
   /* Cuenta atras */
   .count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#fff;z-index:20;}
@@ -313,8 +312,8 @@ if('serviceWorker' in navigator){
     </div>
 
     <div class="segment" id="segEstimulo">
-      <button class="sel" data-v="a">Números/Letras</button>
-      <button data-v="b">Símbolos</button>
+      <button class="sel" data-v="3x3">3x3</button>
+      <button data-v="4x4">4x4</button>
     </div>
 
     <div class="segment" id="segEnsayos">
@@ -371,7 +370,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v11</div>
+    <div class="app-ver">v12</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -456,8 +455,8 @@ if('serviceWorker' in navigator){
         <button class="rank-tab" data-v="limite">L&#237;mite</button>
       </div>
       <div class="rank-tabs" id="segEstR" style="margin-top:8px;">
-        <button class="rank-tab" data-v="a">Números/Letras</button>
-        <button class="rank-tab" data-v="b">Símbolos</button>
+        <button class="rank-tab" data-v="3x3">3x3</button>
+        <button class="rank-tab" data-v="4x4">4x4</button>
       </div>
       <div class="rank-tabs" id="segEnsR" style="margin-top:8px;">
         <button class="rank-tab" data-v="10">10</button>
@@ -524,25 +523,26 @@ function seg(id){
 }
 function selVal(id){ var b=$(id).querySelector('button.sel'); return b?b.getAttribute('data-v'):null; }
 
-var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],t0:0,running:false,raf:0,lock:true,countIv:0,coverTo:0,blankTo:0,resEnsayos:0,pressed:0,
+var S={mode:'normal',stim:'3x3',total:'10',totalN:10,name:'RDS',sport:'',times:[],t0:0,running:false,raf:0,lock:true,countIv:0,coverTo:0,blankTo:0,resEnsayos:0,pressed:0,
   cols:3,n:9,vals:[],pair:[],got:{},down:{},tTrial:0,blank:false,remain:0,last:0,saved:null,keys:[]};
 
 /* ---------- PERCEPTION 2 (2026-10-14) ----------
-   Teclado de KB_COLS[modo] x KB_COLS[modo] (Normal 3x3, Extremo 3x3, Limite 4x4). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
-   simbolos si se elige "Simbolos" y SIEMPRE en Limite). En el teclado hay UNA pareja de teclas iguales (en el de numeros falta uno y otro esta repetido):
+   v12: la fila 2 elige el TAMANO del teclado en los tres modos: 3x3 (9 teclas) o 4x4 (16). Etiquetas por modo: Normal = numeros (3x3: 1-9; 4x4: 01-20 con dos cifras),
+   Extremo = letras (A-Z), Limite = simbolos. Tras la cuenta atras aparecen las teclas con su etiqueta. En el teclado hay UNA pareja de teclas iguales (en el de numeros falta uno y otro esta repetido):
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
    el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Al pulsar la segunda tecla se ve marcada KB_FLASH_MS y enseguida aparece el teclado siguiente.
-   Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). EXTREMO (v7): limite de EXT_LIMIT_MS (5 s; v11, antes 4 s) por teclado; la barra superior pasa a ser una cuenta atras
-   de ese tiempo (llena al aparecer cada teclado, vacia a los 5 s) y si se agota = FALLO (no se guarda) [decision mia: Roberto dijo 'fallo o da por terminado'; no se guarda nada parcial]. Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
+   Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). EXTREMO (v7): limite de tiempo por teclado (v12: EXT_LIMIT3_MS = 5 s con 3x3 y EXT_LIMIT4_MS = 8 s con 4x4); la barra superior pasa a ser una cuenta atras
+   de ese tiempo (llena al aparecer cada teclado, vacia al agotarse el tiempo) y si se agota = FALLO (no se guarda) [decision mia: Roberto dijo 'fallo o da por terminado'; no se guarda nada parcial]. Limite: cuenta atras inicial (v12: LIM_START3_MS = 15 s con 3x3, LIM_START4_MS = 30 s con 4x4); cada pareja suma tiempo
    (LIM_BONUS_MS, bajando LIM_BONUS_STEP cada pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
    DECISIONES MIAS no confirmadas: letras = A-Z (26, v4: sin Ñ); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
-var EXT_LIMIT_MS=5000;                            /* v7: Extremo: tiempo maximo por teclado (la barra superior es la cuenta atras) */
+var EXT_LIMIT3_MS=5000, EXT_LIMIT4_MS=8000;       /* Extremo: tiempo maximo por teclado segun el tamano (la barra superior es la cuenta atras) */
+function extLimit(){ return S.cols===4 ? EXT_LIMIT4_MS : EXT_LIMIT3_MS; }
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
-var KB_COLS={normal:3, extremo:3, limite:4};      /* lado del teclado por modo (v6: Extremo 3x3 = 9 teclas; Limite 4x4 = 16) */
-var LIM_START_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
+var LIM_START3_MS=15000, LIM_START4_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
 var NUMS=['1','2','3','4','5','6','7','8','9'];
+var NUMS2=[]; (function(){ for(var n=1;n<=20;n++){ NUMS2.push((n<10?'0':'')+n); } })();   /* v12: Normal 4x4: 01..20 con dos cifras */
 var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');   /* v4: sin la Ñ (26 letras) */
 var SYM_INK='#2a2118';
 var SYMS=[
@@ -565,12 +565,12 @@ var SYMS=[
 ];
 
 function filterInitials(el){ el.value=el.value.replace(/[^A-Za-z]/g,'').toUpperCase(); }
-function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, m0==='limite'?'b':(selVal('segEstimulo')||'a'), m0==='limite'?'0':(selVal('segEnsayos')||'10')); }catch(e){}
+function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, (selVal('segEstimulo')||'3x3'), m0==='limite'?'0':(selVal('segEnsayos')||'10')); }catch(e){}
   S.mode=selVal('segModo')||'normal';
-  S.stim=(S.mode==='limite') ? 'b' : (selVal('segEstimulo')||'a');   /* a = Numeros/Letras, b = Simbolos; Limite siempre simbolos ('b') */
+  S.stim=(selVal('segEstimulo')||'3x3');   /* v12: '3x3' (9 teclas) o '4x4' (16) en los tres modos */
   S.total=(S.mode==='limite') ? '0' : (selVal('segEnsayos')||'10');   /* Limite: sin 10/25/50 (clave unica '0') */
   S.totalN=(S.mode==='limite') ? 0 : (parseInt(S.total,10)||10);
-  S.cols=KB_COLS[S.mode]||3; S.n=S.cols*S.cols;
+  S.cols=(S.stim==='4x4') ? 4 : 3; S.n=S.cols*S.cols;
   var nm=($('user-ini-input').value||'RDS').toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
   S.name=nm||'RDS';
   S.sport=($('user-sport-select')&&$('user-sport-select').value)||'';
@@ -579,7 +579,8 @@ function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, m0==
 function repeatGame(){ runGame(); }
 function shuffleArr(a){ var i,j,t; for(i=a.length-1;i>0;i--){ j=Math.floor(Math.random()*(i+1)); t=a[i];a[i]=a[j];a[j]=t; } return a; }
 
-function symMode(){ return S.mode==='limite' || S.stim==='b'; }
+function limStart(){ return S.cols===4 ? LIM_START4_MS : LIM_START3_MS; }
+function symMode(){ return S.mode==='limite'; }   /* v12: los simbolos solo en Limite */
 function kbFit(){   /* el panel es un cuadrado: lado = el menor entre ancho y alto disponibles (sin depender de unidades CSS modernas) */
   try{
     var g=$('grid'), w=g&&g.parentNode; if(!w) return;
@@ -587,7 +588,7 @@ function kbFit(){   /* el panel es un cuadrado: lado = el menor entre ancho y al
     var cols=S.cols||3, pad=Math.max(8,Math.round(side*0.035)), gap=Math.max(5,Math.round(side*0.024)), key=(side-8-2*pad-(cols-1)*gap)/cols;
     g.style.width=side+'px'; g.style.height=side+'px'; g.style.padding=pad+'px'; g.style.gap=gap+'px';
     g.style.gridTemplateColumns='repeat('+cols+',1fr)'; g.style.gridTemplateRows='repeat('+cols+',1fr)';
-    g.style.setProperty('--kf', Math.round(key*0.46)+'px');
+    g.style.setProperty('--kf', Math.round(key*((S.mode==='normal' && cols===4) ? 0.37 : 0.46))+'px');   /* dos cifras (01-20): letra algo mas pequena */
   }catch(e){}
 }
 window.addEventListener('resize', kbFit); window.addEventListener('orientationchange', function(){ setTimeout(kbFit,200); });
@@ -602,7 +603,7 @@ function kbDeal(){   /* n-1 valores distintos + 1 repetido (en el de numeros: fa
   var items, distinct, dup, vals, i;
   if(symMode()){ items=[]; for(i=0;i<SYMS.length;i++){ items.push(String(i)); } }
   else if(S.mode==='extremo'){ items=LETTERS.slice(); }
-  else { items=NUMS.slice(); }
+  else { items=(S.cols===4 ? NUMS2 : NUMS).slice(); }
   distinct=shuffleArr(items).slice(0,S.n-1);
   dup=distinct[Math.floor(Math.random()*distinct.length)];
   vals=distinct.concat([dup]); shuffleArr(vals);
@@ -640,7 +641,7 @@ function runGame(){
   S.times=[]; S.pressed=0; S.running=false; S.lock=true; S.blank=false; S.resEnsayos=0; S.down={}; S.got={}; S.vals=[]; S.pair=[]; S.saved=null;
   kbBuild();
   var lim=(S.mode==='limite');
-  $('stTimeK').textContent=lim?'Restante':'Tiempo'; $('stTime').textContent=lim?(LIM_START_MS/1000).toFixed(1):'0:00.00';
+  $('stTimeK').textContent=lim?'Restante':'Tiempo'; $('stTime').textContent=lim?(limStart()/1000).toFixed(1):'0:00.00';
   $('stAvgK').textContent='Media react.'; $('stAvg').textContent='--'; $('stLast').textContent='--';
   $('trialCount').textContent=lim?'0':('0/'+S.totalN); setProgress((lim||S.mode==='extremo')?1:0);
   var n=3, el=$('sqCount');
@@ -652,7 +653,7 @@ function runGame(){
   step();
 }
 function beginPlay(){
-  S.coverTo=0; S.running=true; S.t0=performance.now(); S.last=S.t0; S.remain=LIM_START_MS;
+  S.coverTo=0; S.running=true; S.t0=performance.now(); S.last=S.t0; S.remain=limStart();
   kbShow();
   S.raf=requestAnimationFrame(loop);
 }
@@ -664,13 +665,13 @@ function loop(){
     if(!S.blank){ S.remain-=dt*(1+LIM_SPEED_STEP*S.pressed); }
     if(S.remain<=0){ S.remain=0; $('stTime').textContent='0.0'; setProgress(0); finish('time'); return; }
     $('stTime').textContent=(S.remain/1000).toFixed(1);
-    setProgress(Math.min(1,S.remain/LIM_START_MS));
+    setProgress(Math.min(1,S.remain/limStart()));
   } else {
     $('stTime').textContent=fmtTime(now-S.t0);
     if(S.mode==='extremo' && !S.lock && !S.blank){     /* Extremo: limite de tiempo por teclado */
-      var left=EXT_LIMIT_MS-(now-S.tTrial);
-      if(left<=0){ setProgress(0); failNormal('Has tardado m\u00e1s de '+(EXT_LIMIT_MS/1000)+' segundos en encontrar la pareja. Vuelve a intentarlo.'); return; }
-      setProgress(left/EXT_LIMIT_MS);
+      var lm=extLimit(), left=lm-(now-S.tTrial);
+      if(left<=0){ setProgress(0); failNormal('Has tardado m\u00e1s de '+(lm/1000)+' segundos en encontrar la pareja. Vuelve a intentarlo.'); return; }
+      setProgress(left/lm);
     }
   }
   S.raf=requestAnimationFrame(loop);
@@ -942,8 +943,8 @@ function renderRankList(list, el, m, latest){
 function rankFromSel(){
   var mode=selVal('segModoR')||'normal';
   var lim=(mode==='limite');
-  var stim=lim ? 'b' : (selVal('segEstR')||'a');   /* Limite: sin x1/x2/x4 (clave unica '0'), ese selector queda anulado */
-  $('segEnsR').classList.toggle('off', lim); $('segEstR').classList.toggle('off', lim);
+  var stim=(selVal('segEstR')||'3x3');   /* Limite: sin x1/x2/x4 (clave unica '0'), ese selector queda anulado */
+  $('segEnsR').classList.toggle('off', lim);
   renderRank(mode,stim,lim ? '0' : (selVal('segEnsR')||'10'));
 }
 function segRank(id){
@@ -983,10 +984,10 @@ function showRanking(){
   if(btn) btn.textContent='Mostrar repetidos';
   updateRankSaveBtn();
   var mode=selVal('segModo')||'normal';
-  var stim=(mode==='limite') ? 'b' : (selVal('segEstimulo')||'a');
+  var stim=(selVal('segEstimulo')||'3x3');
   var tot=selVal('segEnsayos')||'10';
   setSeg('segModoR',mode); setSeg('segEstR',stim); setSeg('segEnsR',tot);
-  $('segEnsR').classList.toggle('off', mode==='limite'); $('segEstR').classList.toggle('off', mode==='limite');
+  $('segEnsR').classList.toggle('off', mode==='limite');
   renderRank(mode,stim,mode==='limite' ? '0' : tot); show('ranking');
 }
 function capName(rows,max){
@@ -1066,7 +1067,7 @@ function warmRank(mode,stim,total){
 function goHome(){ if(S.countIv){clearInterval(S.countIv);S.countIv=0;} if(S.coverTo){clearTimeout(S.coverTo);S.coverTo=0;} if(S.blankTo){clearTimeout(S.blankTo);S.blankTo=0;} $('sqCount').textContent=''; S.running=false; S.lock=true; cancelAnimationFrame(S.raf); show('home'); }
 
 seg('segModo'); seg('segEstimulo'); seg('segEnsayos');
-function applyModeUI(){ var l=selVal('segModo')==='limite'; $('segEnsayos').classList.toggle('off', l); $('segEstimulo').classList.toggle('off', l); }
+function applyModeUI(){ var l=selVal('segModo')==='limite'; $('segEnsayos').classList.toggle('off', l); }
 $('segModo').addEventListener('click', applyModeUI);
 applyModeUI();
 segRank('segModoR'); segRank('segEstR'); segRank('segEnsR');
