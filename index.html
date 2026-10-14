@@ -367,7 +367,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v1</div>
+    <div class="app-ver">v2</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -523,16 +523,17 @@ var S={mode:'normal',stim:'a',total:'15',totalN:15,name:'RDS',sport:'',times:[],
   cols:3,n:9,vals:[],pair:[],got:{},down:{},tTrial:0,blank:false,remain:0,last:0,saved:null,keys:[]};
 
 /* ---------- PERCEPTION 2 (2026-10-14) ----------
-   Teclado de 3x3 (Normal y Limite) o 4x4 (Extremo). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
+   Teclado de KB_COLS[modo] x KB_COLS[modo] (v2, prueba de Roberto: Normal 3x3, Extremo 3x3, Limite 4x4; antes Extremo 4x4 y Limite 3x3). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
    simbolos si se elige "Simbolos" y SIEMPRE en Limite). En el teclado hay UNA pareja de teclas iguales (en el de numeros falta uno y otro esta repetido):
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
-   el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Entre un teclado y el siguiente hay una pausa en blanco de KB_BLANK_MS.
+   el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Al pulsar la segunda tecla se ve marcada KB_FLASH_MS y enseguida aparece el teclado siguiente.
    Normal/Extremo: 15/25/50 teclados; resultado = reaccion media (menor mejor). Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
    (LIM_BONUS_MS, bajando LIM_BONUS_STEP cada pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
-   la pausa en blanco. Resultado = parejas encontradas, desempate por reaccion media.
-   DECISIONES MIAS no confirmadas: Limite usa teclado 3x3; letras = A-Z y Ñ (27); 4x4 = 15 distintas + 1 repetida; pulsar una tecla durante la pausa en blanco se ignora. */
-var KB_BLANK_MS=350;
+   esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
+   DECISIONES MIAS no confirmadas: letras = A-Z y Ñ (27); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
+var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
+var KB_COLS={normal:3, extremo:3, limite:4};      /* v2: lado del teclado por modo (para probar otras combinaciones) */
 var LIM_START_MS=15000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
 var NUMS=['1','2','3','4','5','6','7','8','9'];
 var LETTERS='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
@@ -562,7 +563,7 @@ function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, m0==
   S.stim=(S.mode==='limite') ? 'b' : (selVal('segEstimulo')||'a');   /* a = Numeros/Letras, b = Simbolos; Limite siempre simbolos ('b') */
   S.total=(S.mode==='limite') ? '0' : (selVal('segEnsayos')||'15');   /* Limite: sin 15/25/50 (clave unica '0') */
   S.totalN=(S.mode==='limite') ? 0 : (parseInt(S.total,10)||15);
-  S.cols=(S.mode==='extremo') ? 4 : 3; S.n=S.cols*S.cols;
+  S.cols=KB_COLS[S.mode]||3; S.n=S.cols*S.cols;
   var nm=($('user-ini-input').value||'RDS').toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
   S.name=nm||'RDS';
   S.sport=($('user-sport-select')&&$('user-sport-select').value)||'';
@@ -617,9 +618,9 @@ function kbShow(){
   requestAnimationFrame(function(){ S.tTrial=performance.now(); });   /* el reloj arranca cuando el teclado ya se ha pintado */
 }
 function nextTrial(){
-  S.lock=true; S.blank=true; kbPaint(true);
+  S.lock=true; S.blank=true;                       /* las dos teclas de la pareja se quedan marcadas un instante */
   if(S.blankTo){ clearTimeout(S.blankTo); }
-  S.blankTo=setTimeout(function(){ S.blankTo=0; if(!S.running) return; kbShow(); }, KB_BLANK_MS);
+  S.blankTo=setTimeout(function(){ S.blankTo=0; if(!S.running) return; kbShow(); }, KB_FLASH_MS);
 }
 
 function runGame(){
