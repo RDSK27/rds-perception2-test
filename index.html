@@ -314,7 +314,7 @@ if('serviceWorker' in navigator){
     </div>
 
     <div class="segment" id="segEnsayos">
-      <button class="sel" data-v="15">15</button>
+      <button class="sel" data-v="10">10</button>
       <button data-v="25">25</button>
       <button data-v="50">50</button>
     </div>
@@ -367,7 +367,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v2</div>
+    <div class="app-ver">v3</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -455,7 +455,7 @@ if('serviceWorker' in navigator){
         <button class="rank-tab" data-v="b">Símbolos</button>
       </div>
       <div class="rank-tabs" id="segEnsR" style="margin-top:8px;">
-        <button class="rank-tab" data-v="15">15</button>
+        <button class="rank-tab" data-v="10">10</button>
         <button class="rank-tab" data-v="25">25</button>
         <button class="rank-tab" data-v="50">50</button>
       </div>
@@ -519,7 +519,7 @@ function seg(id){
 }
 function selVal(id){ var b=$(id).querySelector('button.sel'); return b?b.getAttribute('data-v'):null; }
 
-var S={mode:'normal',stim:'a',total:'15',totalN:15,name:'RDS',sport:'',times:[],t0:0,running:false,raf:0,lock:true,countIv:0,coverTo:0,blankTo:0,resEnsayos:0,pressed:0,
+var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],t0:0,running:false,raf:0,lock:true,countIv:0,coverTo:0,blankTo:0,resEnsayos:0,pressed:0,
   cols:3,n:9,vals:[],pair:[],got:{},down:{},tTrial:0,blank:false,remain:0,last:0,saved:null,keys:[]};
 
 /* ---------- PERCEPTION 2 (2026-10-14) ----------
@@ -528,7 +528,7 @@ var S={mode:'normal',stim:'a',total:'15',totalN:15,name:'RDS',sport:'',times:[],
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
    el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Al pulsar la segunda tecla se ve marcada KB_FLASH_MS y enseguida aparece el teclado siguiente.
-   Normal/Extremo: 15/25/50 teclados; resultado = reaccion media (menor mejor). Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
+   Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
    (LIM_BONUS_MS, bajando LIM_BONUS_STEP cada pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
    DECISIONES MIAS no confirmadas: letras = A-Z y Ñ (27); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
@@ -558,11 +558,11 @@ var SYMS=[
 ];
 
 function filterInitials(el){ el.value=el.value.replace(/[^A-Za-z]/g,'').toUpperCase(); }
-function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, m0==='limite'?'b':(selVal('segEstimulo')||'a'), m0==='limite'?'0':(selVal('segEnsayos')||'15')); }catch(e){}
+function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, m0==='limite'?'b':(selVal('segEstimulo')||'a'), m0==='limite'?'0':(selVal('segEnsayos')||'10')); }catch(e){}
   S.mode=selVal('segModo')||'normal';
   S.stim=(S.mode==='limite') ? 'b' : (selVal('segEstimulo')||'a');   /* a = Numeros/Letras, b = Simbolos; Limite siempre simbolos ('b') */
-  S.total=(S.mode==='limite') ? '0' : (selVal('segEnsayos')||'15');   /* Limite: sin 15/25/50 (clave unica '0') */
-  S.totalN=(S.mode==='limite') ? 0 : (parseInt(S.total,10)||15);
+  S.total=(S.mode==='limite') ? '0' : (selVal('segEnsayos')||'10');   /* Limite: sin 10/25/50 (clave unica '0') */
+  S.totalN=(S.mode==='limite') ? 0 : (parseInt(S.total,10)||10);
   S.cols=KB_COLS[S.mode]||3; S.n=S.cols*S.cols;
   var nm=($('user-ini-input').value||'RDS').toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
   S.name=nm||'RDS';
@@ -930,7 +930,7 @@ function rankFromSel(){
   var lim=(mode==='limite');
   var stim=lim ? 'b' : (selVal('segEstR')||'a');   /* Limite: sin x1/x2/x4 (clave unica '0'), ese selector queda anulado */
   $('segEnsR').classList.toggle('off', lim); $('segEstR').classList.toggle('off', lim);
-  renderRank(mode,stim,lim ? '0' : (selVal('segEnsR')||'15'));
+  renderRank(mode,stim,lim ? '0' : (selVal('segEnsR')||'10'));
 }
 function segRank(id){
   var box=$(id);
@@ -970,7 +970,7 @@ function showRanking(){
   updateRankSaveBtn();
   var mode=selVal('segModo')||'normal';
   var stim=(mode==='limite') ? 'b' : (selVal('segEstimulo')||'a');
-  var tot=selVal('segEnsayos')||'15';
+  var tot=selVal('segEnsayos')||'10';
   setSeg('segModoR',mode); setSeg('segEstR',stim); setSeg('segEnsR',tot);
   $('segEnsR').classList.toggle('off', mode==='limite'); $('segEstR').classList.toggle('off', mode==='limite');
   renderRank(mode,stim,mode==='limite' ? '0' : tot); show('ranking');
