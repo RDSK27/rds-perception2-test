@@ -370,7 +370,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v16</div>
+    <div class="app-ver">v17</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -540,7 +540,7 @@ var S={mode:'normal',stim:'3x3',total:'10',totalN:10,name:'RDS',sport:'',times:[
 var EXT_LIMIT3_MS=5000, EXT_LIMIT4_MS=10000;       /* Extremo: tiempo maximo por teclado segun el tamano (la barra superior es la cuenta atras) */
 function extLimit(){ return S.cols===4 ? EXT_LIMIT4_MS : EXT_LIMIT3_MS; }
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
-var LIM_START3_MS=15000, LIM_START4_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_FREE=8, LIM_BONUS_STEP=12, LIM_BONUS_MIN=400, LIM_SPEED_STEP=0;   /* v16 (Limite mas facil): antes el bonus bajaba 25 ms por pareja desde la 1a hasta 250 ms */
+var LIM_START3_MS=15000, LIM_START4_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_FREE=8, LIM_BONUS_STEP=12, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;   /* v16 (Limite mas facil): antes el bonus bajaba 25 ms por pareja desde la 1a hasta 250 ms */
 var NUMS=['1','2','3','4','5','6','7','8','9'];
 var NUMS2=[]; (function(){ for(var n=1;n<=20;n++){ NUMS2.push((n<10?'0':'')+n); } })();   /* v12: Normal 4x4: 01..20 con dos cifras */
 var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');   /* v4: sin la Ñ (26 letras) */
