@@ -370,7 +370,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v13</div>
+    <div class="app-ver">v14</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -491,7 +491,7 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 var AC=null;
 function audioCtx(){
   try{
-    if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); }
+    if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)(); try{ var _b=AC.createBuffer(1,1,22050), _s=AC.createBufferSource(); _s.buffer=_b; _s.connect(AC.destination); _s.start(0); }catch(e2){} }
     if(AC.state==='suspended'){ AC.resume(); }
   }catch(e){ AC=null; }
   return AC;
@@ -563,6 +563,38 @@ var SYMS=[
   '<circle cx="12" cy="12" r="8" fill="none" stroke="'+SYM_INK+'" stroke-width="2.6"/><circle cx="12" cy="12" r="3.4" fill="'+SYM_INK+'"/>',
   '<path d="M12 21.5C5 15.5 3 12 3 8.7 3 5.9 5.1 4 7.6 4c1.7 0 3.4 1 4.4 2.6C13 5 14.700 4 16.400 4 18.900 4 21 5.900 21 8.700c0 3.300-2 6.800-9 12.800z" fill="'+SYM_INK+'"/>'
 ];
+
+/* ---------- Sonido de pulsar una tecla (v14, 2026-10-14) ----------
+   'orig' = el clic de siempre (sndButton: tono triangular de 520 Hz). Variantes sintetizadas (WebAudio, sin archivos): 'A' mecanica, 'B' suave, 'C' seca y 'P' pensada para el
+   altavoz de un movil (energia en 0,8-4 kHz: los graves de A/B/C casi no salen por un altavoz pequeno). Por defecto: iPhone/iPad = 'P', resto = 'orig'.
+   Para probar otra en cualquier dispositivo: abrir la app con ?snd=orig | A | B | C | P (se recuerda en ese dispositivo). */
+var KEY_SND=(function(){
+  var v=null;
+  try{ var m=location.search.match(/[?&]snd=([A-Za-z]+)/); if(m){ v=m[1]; localStorage.setItem('rds_pc2_snd',v); } else { v=localStorage.getItem('rds_pc2_snd'); } }catch(e){}
+  if(v==='orig'||v==='A'||v==='B'||v==='C'||v==='P') return v;
+  var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  return ios ? 'P' : 'orig';
+})();
+var KEY_NOISE=null;
+function keyNoise(c){
+  if(!KEY_NOISE){ var n=Math.floor(c.sampleRate*0.08), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0), i; for(i=0;i<n;i++){ d[i]=Math.random()*2-1; } KEY_NOISE=b; }
+  return KEY_NOISE;
+}
+function keyBurst(c,t,type,freq,q,vol,dur){   /* ruido filtrado con ataque instantaneo y caida rapida */
+  var s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain();
+  s.buffer=keyNoise(c); f.type=type; f.frequency.value=freq; f.Q.value=q;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.0015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(c.destination); s.start(t); s.stop(t+dur+0.02);
+}
+function sndKey(v){
+  v=v||KEY_SND;
+  if(v==='orig'){ sndButton(); return; }
+  var c=audioCtx(); if(!c) return; var t=c.currentTime, r=0.94+Math.random()*0.12;
+  if(v==='B'){ keyBurst(c,t,'lowpass',1900*r,0.7,0.55,0.040); tone('sine',140*r,58*r,t,0.085,0.42); }
+  else if(v==='C'){ keyBurst(c,t,'highpass',2300*r,0.8,0.55,0.016); tone('sine',230*r,105*r,t,0.045,0.30); tone('square',1900*r,0,t+0.012,0.007,0.07); }
+  else if(v==='P'){ keyBurst(c,t,'bandpass',2400*r,0.8,1.0,0.024); tone('triangle',900*r,420*r,t,0.040,0.45); keyBurst(c,t+0.009,'highpass',4200*r,0.9,0.35,0.012); }
+  else { keyBurst(c,t,'bandpass',3200*r,1.1,1.0,0.026); tone('sine',190*r,78*r,t,0.065,0.34); keyBurst(c,t+0.011,'bandpass',5200*r,1.4,0.40,0.012); }
+}
 
 function filterInitials(el){ el.value=el.value.replace(/[^A-Za-z]/g,'').toUpperCase(); }
 function startGame(){ try{ var m0=selVal('segModo')||'normal'; warmRank(m0, (selVal('segEstimulo')||'3x3'), m0==='limite'?'0':(selVal('segEnsayos')||'10')); }catch(e){}
@@ -696,7 +728,7 @@ function wrongKey(){
 function keyPress(i, now){
   if(S.pair.indexOf(i)<0){ wrongKey(); return; }
   if(S.got[i]) return;                       /* esa tecla de la pareja ya estaba pulsada */
-  S.got[i]=true; S.keys[i].classList.add('on'); sndButton();
+  S.got[i]=true; S.keys[i].classList.add('on'); sndKey();
   if(S.got[S.pair[0]] && S.got[S.pair[1]]){ pairDone(now-S.tTrial); }
 }
 function onKeyDown(e){
