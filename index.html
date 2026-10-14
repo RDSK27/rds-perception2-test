@@ -371,7 +371,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v10</div>
+    <div class="app-ver">v11</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -533,12 +533,12 @@ var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
    el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Al pulsar la segunda tecla se ve marcada KB_FLASH_MS y enseguida aparece el teclado siguiente.
-   Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). EXTREMO (v7): limite de EXT_LIMIT_MS (4 s) por teclado; la barra superior pasa a ser una cuenta atras
-   de ese tiempo (llena al aparecer cada teclado, vacia a los 4 s) y si se agota = FALLO (no se guarda) [decision mia: Roberto dijo 'fallo o da por terminado'; no se guarda nada parcial]. Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
+   Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). EXTREMO (v7): limite de EXT_LIMIT_MS (5 s; v11, antes 4 s) por teclado; la barra superior pasa a ser una cuenta atras
+   de ese tiempo (llena al aparecer cada teclado, vacia a los 5 s) y si se agota = FALLO (no se guarda) [decision mia: Roberto dijo 'fallo o da por terminado'; no se guarda nada parcial]. Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
    (LIM_BONUS_MS, bajando LIM_BONUS_STEP cada pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
    DECISIONES MIAS no confirmadas: letras = A-Z (26, v4: sin Ñ); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
-var EXT_LIMIT_MS=4000;                            /* v7: Extremo: tiempo maximo por teclado (la barra superior es la cuenta atras) */
+var EXT_LIMIT_MS=5000;                            /* v7: Extremo: tiempo maximo por teclado (la barra superior es la cuenta atras) */
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
 var KB_COLS={normal:3, extremo:3, limite:4};      /* lado del teclado por modo (v6: Extremo 3x3 = 9 teclas; Limite 4x4 = 16) */
 var LIM_START_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
@@ -621,7 +621,7 @@ function kbPaint(blank){
 }
 function kbShow(){
   S.blank=false; S.got={}; S.down={}; kbDeal(); kbPaint(false); S.lock=false;
-  if(S.mode==='extremo') setProgress(1);            /* cuenta atras de 4 s: barra llena al aparecer el teclado */
+  if(S.mode==='extremo') setProgress(1);            /* cuenta atras de 5 s: barra llena al aparecer el teclado */
   S.tTrial=performance.now();
   requestAnimationFrame(function(){ S.tTrial=performance.now(); });   /* el reloj arranca cuando el teclado ya se ha pintado */
 }
@@ -682,7 +682,7 @@ function pairDone(rt){
   var lim=(S.mode==='limite');
   if(lim){ S.remain+=Math.max(LIM_BONUS_MIN, LIM_BONUS_MS-LIM_BONUS_STEP*(S.pressed-1)); }
   $('trialCount').textContent=lim ? String(S.pressed) : (S.pressed+'/'+S.totalN);
-  if(!lim && S.mode!=='extremo') setProgress(S.pressed/S.totalN);   /* en Extremo la barra es la cuenta atras de 4 s */
+  if(!lim && S.mode!=='extremo') setProgress(S.pressed/S.totalN);   /* en Extremo la barra es la cuenta atras de 5 s */
   updateStats();
   if(!lim && S.pressed>=S.totalN){ finishNormal(); return; }
   nextTrial();
