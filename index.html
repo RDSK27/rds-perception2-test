@@ -186,6 +186,10 @@ if('serviceWorker' in navigator){
   .progress{flex:1;height:9px;background:var(--seg);border:2px solid var(--borde);}
   .progress > i{display:block;height:100%;background:var(--rojo);width:0%;transition:width .12s linear;}
 
+  .stats{gap:4px;}
+  .stat .k{font-size:8.5px;letter-spacing:.4px;white-space:nowrap;}
+  .stat .v{font-size:21px;white-space:nowrap;}   /* 4 valores en una sola linea: mas pequenos que antes (36 px) */
+  .stat.main .v{color:var(--negro);}
   .grid-wrap{position:relative;flex:1;min-height:0;display:flex;padding:6px;box-sizing:border-box;}
   /* panel NEGRO con borde ROJO y esquinas redondeadas donde se colocan las teclas (como Reaction Trial); lado cuadrado fijado por JS (kbFit) */
   .grid{flex:none;margin:auto;width:min(100%,62vh);height:min(100%,62vh);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:8px;touch-action:none;background:#000;border:4px solid #b03020;padding:10px;box-sizing:border-box;border-radius:18px;-webkit-user-select:none;user-select:none;}
@@ -367,7 +371,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v7</div>
+    <div class="app-ver">v8</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -378,11 +382,12 @@ if('serviceWorker' in navigator){
   <section id="game" class="screen">
     <div class="game-body">
       <div class="stats">
+        <div class="stat"><div class="k" id="stAvgK">Media react.</div><div class="v" id="stAvg">--</div></div>
+        <div class="stat main"><div class="k" id="stLastK">Último</div><div class="v" id="stLast">--</div></div>
+        <div class="stat main"><div class="k" id="stTrialK">Ensayos</div><div class="v" id="trialCount">0</div></div>
         <div class="stat"><div class="k" id="stTimeK">Tiempo</div><div class="v" id="stTime">0:00.00</div></div>
-        <div class="stat main"><div class="k" id="stAvgK">Media react.</div><div class="v" id="stAvg">--</div></div>
       </div>
       <div class="prog-row">
-        <div class="trial-count" id="trialCount">0</div>
         <div class="progress"><i id="prog"></i></div>
       </div>
       <div class="grid-wrap"><div class="grid" id="grid"></div><div class="sq-count" id="sqCount"></div></div>
@@ -635,8 +640,8 @@ function runGame(){
   S.times=[]; S.pressed=0; S.running=false; S.lock=true; S.blank=false; S.resEnsayos=0; S.down={}; S.got={}; S.vals=[]; S.pair=[]; S.saved=null;
   kbBuild();
   var lim=(S.mode==='limite');
-  $('stTimeK').textContent=lim?'Tiempo restante':'Tiempo'; $('stTime').textContent=lim?(LIM_START_MS/1000).toFixed(1):'0:00.00';
-  $('stAvgK').textContent='Media react.'; $('stAvg').textContent='--';
+  $('stTimeK').textContent=lim?'Restante':'Tiempo'; $('stTime').textContent=lim?(LIM_START_MS/1000).toFixed(1):'0:00.00';
+  $('stAvgK').textContent='Media react.'; $('stAvg').textContent='--'; $('stLast').textContent='--';
   $('trialCount').textContent=lim?'0':('0/'+S.totalN); setProgress((lim||S.mode==='extremo')?1:0);
   var n=3, el=$('sqCount');
   function step(){
@@ -672,6 +677,7 @@ function loop(){
 }
 function pairDone(rt){
   S.times.push(rt); S.pressed++;
+  $('stLast').textContent=String(Math.round(rt));   /* v8: reaccion del ultimo ensayo */
   sndSymbol();
   var lim=(S.mode==='limite');
   if(lim){ S.remain+=Math.max(LIM_BONUS_MIN, LIM_BONUS_MS-LIM_BONUS_STEP*(S.pressed-1)); }
