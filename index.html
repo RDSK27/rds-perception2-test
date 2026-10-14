@@ -370,7 +370,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v17</div>
+    <div class="app-ver">v18</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -534,13 +534,13 @@ var S={mode:'normal',stim:'3x3',total:'10',totalN:10,name:'RDS',sport:'',times:[
    el teclado hasta que se pulsa la SEGUNDA tecla de la pareja. Al pulsar la segunda tecla se ve marcada KB_FLASH_MS y enseguida aparece el teclado siguiente.
    Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). EXTREMO (v7): limite de tiempo por teclado (v12: EXT_LIMIT3_MS = 5 s con 3x3 y EXT_LIMIT4_MS = 10 s con 4x4 (v15, antes 8 s)); la barra superior pasa a ser una cuenta atras
    de ese tiempo (llena al aparecer cada teclado, vacia al agotarse el tiempo) y si se agota = FALLO (no se guarda) [decision mia: Roberto dijo 'fallo o da por terminado'; no se guarda nada parcial]. Limite: cuenta atras inicial (v12: LIM_START3_MS = 15 s con 3x3, LIM_START4_MS = 30 s con 4x4); cada pareja suma tiempo
-   (LIM_BONUS_MS; v16: las primeras LIM_BONUS_FREE parejas siguen dando el bonus entero y despues baja LIM_BONUS_STEP por pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
+   (LIM_BONUS_MS = 1,5 s; v16/v18: las primeras LIM_BONUS_FREE parejas siguen dando el bonus entero y despues baja LIM_BONUS_STEP por pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
    DECISIONES MIAS no confirmadas: letras = A-Z (26, v4: sin Ñ); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
 var EXT_LIMIT3_MS=5000, EXT_LIMIT4_MS=10000;       /* Extremo: tiempo maximo por teclado segun el tamano (la barra superior es la cuenta atras) */
 function extLimit(){ return S.cols===4 ? EXT_LIMIT4_MS : EXT_LIMIT3_MS; }
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
-var LIM_START3_MS=15000, LIM_START4_MS=30000, LIM_BONUS_MS=1000, LIM_BONUS_FREE=8, LIM_BONUS_STEP=12, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;   /* v16 (Limite mas facil): antes el bonus bajaba 25 ms por pareja desde la 1a hasta 250 ms */
+var LIM_START3_MS=15000, LIM_START4_MS=30000, LIM_BONUS_MS=1500, LIM_BONUS_FREE=8, LIM_BONUS_STEP=20, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;   /* v18: bonus inicial 1,5 s (antes 1 s); el tiempo restante NO tiene tope: puede superar los 15/30 s de salida */   /* v16 (Limite mas facil): antes el bonus bajaba 25 ms por pareja desde la 1a hasta 250 ms */
 var NUMS=['1','2','3','4','5','6','7','8','9'];
 var NUMS2=[]; (function(){ for(var n=1;n<=20;n++){ NUMS2.push((n<10?'0':'')+n); } })();   /* v12: Normal 4x4: 01..20 con dos cifras */
 var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');   /* v4: sin la Ñ (26 letras) */
