@@ -367,7 +367,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v3</div>
+    <div class="app-ver">v4</div>
     <div id="pending-sync" class="pending-sync"></div>
     </div>
 
@@ -523,7 +523,7 @@ var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],
   cols:3,n:9,vals:[],pair:[],got:{},down:{},tTrial:0,blank:false,remain:0,last:0,saved:null,keys:[]};
 
 /* ---------- PERCEPTION 2 (2026-10-14) ----------
-   Teclado de KB_COLS[modo] x KB_COLS[modo] (v2, prueba de Roberto: Normal 3x3, Extremo 3x3, Limite 4x4; antes Extremo 4x4 y Limite 3x3). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
+   Teclado de KB_COLS[modo] x KB_COLS[modo] (Normal 3x3, Extremo 4x4, Limite 4x4). Tras la cuenta atras aparecen las teclas con su etiqueta (numeros del 1 al 9 en Normal; letras en Extremo;
    simbolos si se elige "Simbolos" y SIEMPRE en Limite). En el teclado hay UNA pareja de teclas iguales (en el de numeros falta uno y otro esta repetido):
    hay que pulsar las dos. Se puede pulsar una y luego la otra, o las dos a la vez. Pulsar una tecla que no es de la pareja = fallo (en Limite acaba el ejercicio con
    lo conseguido); pulsar 3 o mas teclas a la vez, o dos a la vez que no sean las de la pareja = FALLADO por trampa (no se guarda). Reaccion = tiempo desde que aparece
@@ -531,12 +531,36 @@ var S={mode:'normal',stim:'a',total:'10',totalN:10,name:'RDS',sport:'',times:[],
    Normal/Extremo: 10/25/50 teclados; resultado = reaccion media (menor mejor). Limite: cuenta atras de LIM_START_MS; cada pareja suma tiempo
    (LIM_BONUS_MS, bajando LIM_BONUS_STEP cada pareja hasta LIM_BONUS_MIN; o, con LIM_SPEED_STEP>0, el reloj corre mas rapido con cada pareja); la cuenta atras se pausa durante
    esa marca de KB_FLASH_MS. Resultado = parejas encontradas, desempate por reaccion media.
-   DECISIONES MIAS no confirmadas: letras = A-Z y Ñ (27); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
+   DECISIONES MIAS no confirmadas: letras = A-Z (26, v4: sin Ñ); n teclas = n-1 distintas + 1 repetida; pulsar una tecla durante la marca de KB_FLASH_MS se ignora. */
 var KB_FLASH_MS=150;                              /* v2: la 2a tecla se ve marcada este tiempo y el teclado siguiente aparece de inmediato (antes: 350 ms en blanco) */
-var KB_COLS={normal:3, extremo:3, limite:4};      /* v2: lado del teclado por modo (para probar otras combinaciones) */
+var KB_COLS={normal:3, extremo:4, limite:4};      /* lado del teclado por modo (v4: Extremo vuelve a 4x4; Limite 4x4) */
+var PAIR_BEEP=false;                              /* v4: sin pitido al completar la pareja: solo suena cada tecla */
+/* ---------- Sonido de pulsar una tecla (sintetizado, sin archivos) ----------
+   Un "clic" de ruido filtrado + un golpe grave corto (el fondo de la tecla) y, en la variante A, un segundo chasquido (el tope). Cada pulsacion varia un poco el tono
+   para que no suene a maquina de repetir. Variantes: 'A' mecanica, 'B' suave (membrana/portatil), 'C' seca (maquina de escribir). */
+var KEY_SND='A';
+var KEY_NOISE=null;
+function keyNoise(c){
+  if(!KEY_NOISE){ var n=Math.floor(c.sampleRate*0.08), b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0), i; for(i=0;i<n;i++){ d[i]=Math.random()*2-1; } KEY_NOISE=b; }
+  return KEY_NOISE;
+}
+function keyBurst(c,t,type,freq,q,vol,dur){   /* ruido filtrado con ataque instantaneo y caida rapida */
+  var s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain();
+  s.buffer=keyNoise(c); f.type=type; f.frequency.value=freq; f.Q.value=q;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.0015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f); f.connect(g); g.connect(c.destination); s.start(t); s.stop(t+dur+0.02);
+}
+function sndKey(v){
+  var c=audioCtx(); if(!c) return; var t=c.currentTime, r=0.94+Math.random()*0.12;
+  v=v||KEY_SND;
+  if(v==='B'){ keyBurst(c,t,'lowpass',1900*r,0.7,0.55,0.040); tone('sine',140*r,58*r,t,0.085,0.42); }
+  else if(v==='C'){ keyBurst(c,t,'highpass',2300*r,0.8,0.55,0.016); tone('sine',230*r,105*r,t,0.045,0.30); tone('square',1900*r,0,t+0.012,0.007,0.07); }
+  else { keyBurst(c,t,'bandpass',3200*r,1.1,1.0,0.026); tone('sine',190*r,78*r,t,0.065,0.34); keyBurst(c,t+0.011,'bandpass',5200*r,1.4,0.40,0.012); }
+}
+
 var LIM_START_MS=15000, LIM_BONUS_MS=1000, LIM_BONUS_STEP=25, LIM_BONUS_MIN=250, LIM_SPEED_STEP=0;
 var NUMS=['1','2','3','4','5','6','7','8','9'];
-var LETTERS='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+var LETTERS='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');   /* v4: sin la Ñ (26 letras) */
 var SYM_INK='#2a2118';
 var SYMS=[
   '<circle cx="12" cy="12" r="8.5" fill="'+SYM_INK+'"/>',
@@ -664,7 +688,7 @@ function loop(){
 }
 function pairDone(rt){
   S.times.push(rt); S.pressed++;
-  sndSymbol();
+  if(PAIR_BEEP) sndSymbol();
   var lim=(S.mode==='limite');
   if(lim){ S.remain+=Math.max(LIM_BONUS_MIN, LIM_BONUS_MS-LIM_BONUS_STEP*(S.pressed-1)); }
   $('trialCount').textContent=lim ? String(S.pressed) : (S.pressed+'/'+S.totalN);
@@ -681,7 +705,7 @@ function wrongKey(){
 function keyPress(i, now){
   if(S.pair.indexOf(i)<0){ wrongKey(); return; }
   if(S.got[i]) return;                       /* esa tecla de la pareja ya estaba pulsada */
-  S.got[i]=true; S.keys[i].classList.add('on'); sndButton();
+  S.got[i]=true; S.keys[i].classList.add('on'); sndKey();
   if(S.got[S.pair[0]] && S.got[S.pair[1]]){ pairDone(now-S.tTrial); }
 }
 function onKeyDown(e){
